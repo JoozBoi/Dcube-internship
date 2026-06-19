@@ -5,7 +5,10 @@ export const PackageDetailScreen = ({
   onBackToFeed,
   isSavedPkg,
   onToggleSavePkg,
+  onRatePackage,
+  userPackageRatings = {},
 }) => {
+  const userRating = userPackageRatings && userPackageRatings[pkg.id];
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [userQuery, setUserQuery] = useState('');
   const [querySent, setQuerySent] = useState(false);
@@ -49,9 +52,15 @@ export const PackageDetailScreen = ({
         {/* Info inside banner wrapper */}
         <div className="absolute bottom-6 left-6 right-6 flex flex-col md:flex-row md:items-end justify-between gap-4 text-white">
           <div>
-            <span className="px-2.5 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider rounded">
-              Verified Agency Escapes
-            </span>
+            <div className="flex items-center space-x-2">
+              <span className="px-2.5 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider rounded">
+                Verified Agency Escapes
+              </span>
+              <span className="px-2.5 py-1 bg-black/40 backdrop-blur-xs text-amber-400 text-[10px] font-black uppercase tracking-wider rounded flex items-center">
+                <Star className="w-3 h-3 fill-amber-400 mr-1" />
+                <span>{pkg.stayRating || pkg.rating || 4.8} ({pkg.stayReviewsCount || pkg.reviewsCount || 12} reviews)</span>
+              </span>
+            </div>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mt-2.5">
               {pkg.title}
             </h1>
@@ -141,6 +150,62 @@ export const PackageDetailScreen = ({
               <div className="mt-4 pt-3 border-t border-gray-100/30 flex items-center justify-between text-xs font-semibold text-gray-600">
                 <span>Estimated accommodation value:</span>
                 <span className="font-extrabold text-gray-800">${pkg.stayValue} USD</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Dedicated Package Core Rating Widget */}
+          <div className="p-6 bg-white border border-gray-100 rounded-2xl shadow-sm space-y-4" id="package-rating-section">
+            <h3 className="text-lg font-black text-gray-900 border-b border-gray-50 pb-2 flex items-center justify-between">
+              <span>Overall Package Rating</span>
+              <span className="flex items-center text-xs font-semibold text-gray-500">
+                <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-550 mr-1" />
+                <span className="text-gray-850 font-bold">{pkg.stayRating || pkg.rating || 4.8}</span>
+                <span className="ml-1">({pkg.stayReviewsCount || pkg.reviewsCount || 12} reviews)</span>
+              </span>
+            </h3>
+            <p className="text-gray-500 text-xs sm:text-sm leading-relaxed">
+              Have you been on this curated journey organized by <span className="font-bold text-gray-700">{pkg.agencyName}</span>? Let the list creator and other travelers know what you think by giving it an interactive star rating!
+            </p>
+
+            <div className="bg-gray-50 hover:bg-gray-50/70 border border-gray-100/50 p-4.5 rounded-xl flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div>
+                <span className="block text-xs font-extrabold text-gray-800 uppercase tracking-wider mb-1">
+                  {userRating !== undefined ? "Your Submitted Rating" : "Your Experience Vibe"}
+                </span>
+                <span className="text-xs text-gray-400 font-medium">
+                  {userRating !== undefined ? "You successfully rated this package. Change your mind? Pick a star below!" : "Click a star to record your rating instantly"}
+                </span>
+              </div>
+
+              <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-1 bg-white px-3.5 py-2.5 rounded-xl shadow-sm border border-gray-100">
+                  {[1, 2, 3, 4, 5].map((starVal) => {
+                    const displayScore = userRating !== undefined ? userRating : 0;
+                    const isGold = starVal <= displayScore;
+                    return (
+                      <button
+                        key={starVal}
+                        type="button"
+                        onClick={() => {
+                          if (onRatePackage) {
+                            onRatePackage(pkg.id, starVal);
+                          }
+                        }}
+                        className="focus:outline-none hover:scale-125 transition-transform p-0.5 active:scale-95"
+                        title={`Rate ${starVal} Star`}
+                      >
+                        <Star className={`w-6 h-6 transition ${isGold ? 'text-amber-400 fill-amber-400' : 'text-gray-200 hover:text-amber-200'}`} />
+                      </button>
+                    );
+                  })}
+                </div>
+                {userRating !== undefined && (
+                  <div className="text-xs bg-emerald-50 text-emerald-800 border border-emerald-100/70 py-2.5 px-3 rounded-xl font-bold flex items-center space-x-1.5 animate-in slide-in-from-right-1 duration-200">
+                    <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                    <span>{userRating}/5 Rated</span>
+                  </div>
+                )}
               </div>
             </div>
           </div>

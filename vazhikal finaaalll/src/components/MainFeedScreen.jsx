@@ -36,7 +36,8 @@ export const MainFeedScreen = ({
   searchTerm,
   currentRole,
   onAddPost,
-  onRatePackage, // Passed dynamically or handled locally in fallbacks
+  onRatePackage,
+  userPackageRatings = {},
 }) => {
   const [activeTab, setActiveTab] = useState('packages'); // packages, experiences
   
@@ -48,14 +49,7 @@ export const MainFeedScreen = ({
   const [profileBio, setProfileBio] = useState('Lover of mountain passes, remote temple hikes, and authentic experiences.');
   const [isSavedAlert, setIsSavedAlert] = useState('');
 
-  // Sample dynamic local ratings fallback if not registered globally
-  const [localRatings, setLocalRatings] = useState({});
-
   const handleRate = (pkgId, rating) => {
-    setLocalRatings(prev => ({
-      ...prev,
-      [pkgId]: rating
-    }));
     if (onRatePackage) {
       onRatePackage(pkgId, rating);
     }
@@ -601,8 +595,10 @@ export const MainFeedScreen = ({
                     </div>
                   ) : (
                     filteredPackages.map((pkg) => {
-                      const dynamicRating = localRatings[pkg.id] || pkg.stayRating || pkg.rating || 4.8;
-                      const dynamicReviews = (pkg.stayReviewsCount || pkg.reviewsCount || 12) + (localRatings[pkg.id] ? 1 : 0);
+                      const userRating = userPackageRatings[pkg.id];
+                      const dynamicRating = pkg.stayRating || pkg.rating || 4.8;
+                      const dynamicReviews = pkg.stayReviewsCount || pkg.reviewsCount || 12;
+                      const starDisplayRating = userRating !== undefined ? userRating : Math.round(dynamicRating);
 
                       return (
                         <div 
@@ -642,28 +638,35 @@ export const MainFeedScreen = ({
                               </h3>
 
                               {/* ADD INTERACTIVE RATING SYSTEM FOR AGENCIES PACKAGES */}
-                              <div className="flex items-center space-x-1 mb-3 border-y border-gray-100/50 py-1.5">
-                                <div className="flex items-center">
-                                  {[1, 2, 3, 4, 5].map((starVal) => {
-                                    const isFilled = starVal <= Math.round(dynamicRating);
-                                    return (
-                                      <button
-                                        key={starVal}
-                                        type="button"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          handleRate(pkg.id, starVal);
-                                        }}
-                                        className="focus:outline-none hover:scale-110 transition-transform p-0.5"
-                                        title={`Rate this tour ${starVal} Star`}
-                                      >
-                                        <Star className={`w-3.5 h-3.5 ${isFilled ? 'text-amber-400 fill-amber-400' : 'text-gray-200'}`} />
-                                      </button>
-                                    );
-                                  })}
+                              <div className="flex items-center space-x-1.5 mb-3 border-y border-gray-100/50 py-1.5 justify-between">
+                                <div className="flex items-center space-x-1">
+                                  <div className="flex items-center">
+                                    {[1, 2, 3, 4, 5].map((starVal) => {
+                                      const isFilled = starVal <= starDisplayRating;
+                                      return (
+                                        <button
+                                          key={starVal}
+                                          type="button"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleRate(pkg.id, starVal);
+                                          }}
+                                          className="focus:outline-none hover:scale-110 transition-transform p-0.5"
+                                          title={`Rate this tour ${starVal} Star`}
+                                        >
+                                          <Star className={`w-3.5 h-3.5 ${isFilled ? 'text-amber-400 fill-amber-400' : 'text-gray-200'}`} />
+                                        </button>
+                                      );
+                                    })}
+                                  </div>
+                                  <span className="text-xs font-black text-gray-800">{Number(dynamicRating).toFixed(1)}</span>
+                                  <span className="text-[10px] text-gray-450 font-semibold font-mono">({dynamicReviews} votes)</span>
                                 </div>
-                                <span className="text-xs font-black text-gray-800">{dynamicRating.toFixed(1)}</span>
-                                <span className="text-[10px] text-gray-400 font-semibold font-mono">({dynamicReviews} votes)</span>
+                                {userRating !== undefined && (
+                                  <span className="text-[9px] bg-emerald-50 text-emerald-700 px-2 py-0.5 rounded-full font-bold border border-emerald-100 animate-pulse">
+                                    Your Choice: {userRating}★
+                                  </span>
+                                )}
                               </div>
 
                               <p className="text-gray-500 text-xs leading-relaxed line-clamp-3 mb-4">

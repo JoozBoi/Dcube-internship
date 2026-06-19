@@ -32,6 +32,7 @@ export default function App() {
   // Unified global registers
   const [posts, setPosts] = useState(initialPosts);
   const [packages, setPackages] = useState(initialPackages);
+  const [userPackageRatings, setUserPackageRatings] = useState({});
   
   // Moderation queues
   const [verifications, setVerifications] = useState(initialVerifications);
@@ -248,6 +249,45 @@ export default function App() {
     );
   };
 
+  const handleRatePackage = (packageId, score) => {
+    const previousScore = userPackageRatings[packageId];
+    const hasRatedAlready = previousScore !== undefined;
+
+    setPackages(prev => prev.map(p => {
+      if (p.id === packageId) {
+        const currentCount = p.stayReviewsCount || p.reviewsCount || 12;
+        const currentRating = p.stayRating || p.rating || 4.8;
+
+        let newCount = currentCount;
+        let newRating = currentRating;
+
+        if (hasRatedAlready) {
+          // Replace former rating: newSum = (currentRating * currentCount) - previousScore + score
+          const currentSum = currentRating * currentCount;
+          newRating = Number(((currentSum - previousScore + score) / currentCount).toFixed(1));
+        } else {
+          // First time rating package in this session
+          newCount = currentCount + 1;
+          newRating = Number(((currentRating * currentCount + score) / newCount).toFixed(1));
+        }
+
+        return {
+          ...p,
+          stayRating: newRating,
+          stayReviewsCount: newCount,
+          rating: newRating,
+          reviewsCount: newCount
+        };
+      }
+      return p;
+    }));
+
+    setUserPackageRatings(prev => ({
+      ...prev,
+      [packageId]: score
+    }));
+  };
+
   const handleAddPost = (title, location, description, cost, duration, highlights, imageUrl, dayByDay = []) => {
     const newPost = {
       id: 'custom-post-' + Date.now(),
@@ -306,24 +346,8 @@ export default function App() {
             searchTerm={searchTerm}
             currentRole={currentRole}
             onAddPost={handleAddPost}
-            onRatePackage={(packageId, score) => {
-              setPackages(prev => prev.map(p => {
-                if (p.id === packageId) {
-                  const currentCount = p.stayReviewsCount || p.reviewsCount || 12;
-                  const currentRating = p.stayRating || p.rating || 4.8;
-                  const newCount = currentCount + 1;
-                  const newRating = Number(((currentRating * currentCount + score) / newCount).toFixed(1));
-                  return {
-                    ...p,
-                    stayRating: newRating,
-                    stayReviewsCount: newCount,
-                    rating: newRating,
-                    reviewsCount: newCount
-                  };
-                }
-                return p;
-              }));
-            }}
+            onRatePackage={handleRatePackage}
+            userPackageRatings={userPackageRatings}
           />
         );
 
@@ -349,6 +373,8 @@ export default function App() {
             onBackToFeed={() => setCurrentScreen('feed')}
             isSavedPkg={savedPackageIds.includes(pkg.id)}
             onToggleSavePkg={handleToggleSavePkg}
+            onRatePackage={handleRatePackage}
+            userPackageRatings={userPackageRatings}
           />
         );
 
