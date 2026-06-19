@@ -30,7 +30,7 @@ export const TopNavBar = ({
           <button 
             type="button"
             onClick={() => onScreenChange('feed')}
-            className="flex items-center space-x-2 text-2xl font-black tracking-tight text-[#ff5a5f] hover:opacity-90 transition-opacity"
+            className="flex items-center space-x-2 text-2xl font-black tracking-tight text-emerald-600 hover:opacity-90 transition-opacity"
             id="header-brand-logo"
           >
             <span>Vazhikal</span>
@@ -41,23 +41,11 @@ export const TopNavBar = ({
               onClick={() => { onScreenChange('feed'); }}
               className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
                 currentScreen === 'feed'
-                  ? 'text-[#ff5a5f] bg-[#ff5a5f]/5'
+                  ? 'text-emerald-600 bg-emerald-50/60'
                   : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
               }`}
             >
               Feed
-            </button>
-            <button
-              onClick={() => onScreenChange('ai-search')}
-              className={`px-3 py-2 text-sm font-medium rounded-lg flex items-center space-x-1.5 transition-colors ${
-                currentScreen === 'ai-search'
-                  ? 'text-teal-600 bg-teal-50'
-                  : 'text-teal-600 hover:text-teal-700 hover:bg-teal-50/50'
-              }`}
-              id="nav-ai-discover-btn"
-            >
-              <Sparkles className="w-4 h-4 text-amber-500 animate-pulse" />
-              <span>AI Discover</span>
             </button>
           </nav>
         </div>
@@ -70,7 +58,7 @@ export const TopNavBar = ({
               placeholder="Search destinations, vibes, or agencies..."
               value={searchInput}
               onChange={(e) => setSearchInput(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm bg-gray-50 hover:bg-gray-100/70 focus:outline-none focus:ring-2 focus:ring-[#ff5a5f] focus:ring-offset-1 focus:bg-white transition-all"
+              className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-full text-sm bg-gray-50 hover:bg-gray-100/70 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-1 focus:bg-white transition-all"
               id="header-search-input"
             />
             <Search className="absolute left-3.5 top-2.5 w-4.5 h-4.5 text-gray-400" />
@@ -85,17 +73,6 @@ export const TopNavBar = ({
             <span>{getRoleLabel(currentRole)}</span>
           </div>
 
-          {/* Interactive Sparkles Button for Mobile */}
-          <button
-            onClick={() => onScreenChange('ai-search')}
-            className={`sm:hidden p-2 rounded-full transition-colors ${
-              currentScreen === 'ai-search' ? 'bg-amber-100 text-amber-600' : 'text-gray-500 hover:bg-gray-100'
-            }`}
-            title="AI Search"
-          >
-            <Sparkles className="w-5 h-5 text-amber-500" />
-          </button>
-
           {/* Notification Button */}
           <button
             type="button"
@@ -103,7 +80,7 @@ export const TopNavBar = ({
             id="header-notification-btn"
           >
             <Bell className="w-5 h-5" />
-            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-[#ff5a5f] rounded-full ring-2 ring-white"></span>
+            <span className="absolute top-1.5 right-1.5 w-2 h-2 bg-emerald-500 rounded-full ring-2 ring-white"></span>
           </button>
 
           {/* Explicit Logout Button */}

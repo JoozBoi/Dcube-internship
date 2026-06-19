@@ -49,7 +49,7 @@ export const PackageDetailScreen = ({
         {/* Info inside banner wrapper */}
         <div className="absolute bottom-6 left-6 right-6 flex flex-col md:flex-row md:items-end justify-between gap-4 text-white">
           <div>
-            <span className="px-2.5 py-1 bg-[#ff5a5f] text-white text-[10px] font-black uppercase tracking-wider rounded">
+            <span className="px-2.5 py-1 bg-emerald-600 text-white text-[10px] font-black uppercase tracking-wider rounded">
               Verified Agency Escapes
             </span>
             <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight mt-2.5">
@@ -122,7 +122,7 @@ export const PackageDetailScreen = ({
             </div>
 
             {/* Box 2: Premium Stay details */}
-            <div className="p-6 bg-[#ff5a5f]/5 border border-[#ff5a5f]/10 rounded-2xl shadow-sm flex flex-col justify-between">
+            <div className="p-6 bg-emerald-500/5 border border-emerald-500/10 rounded-2xl shadow-sm flex flex-col justify-between">
               <div>
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-[9px] px-2 py-0.5 bg-indigo-100 text-indigo-700 font-extrabold rounded uppercase tracking-wider">
@@ -163,7 +163,7 @@ export const PackageDetailScreen = ({
 
             {/* Corporate Agency Host Card */}
             <div className="p-3 bg-gray-50 border border-gray-100 rounded-xl flex items-center space-x-3 mb-6">
-              <div className="w-10 h-10 bg-gradient-to-tr from-orange-400 to-[#ff5a5f] rounded-lg flex items-center justify-center text-white font-black text-sm relative">
+              <div className="w-10 h-10 bg-gradient-to-tr from-emerald-400 to-emerald-600 rounded-lg flex items-center justify-center text-white font-black text-sm relative">
                 {pkg.agencyName[0]}
                 <span className="absolute -bottom-1 -right-1 bg-amber-500 text-white rounded-full p-0.5 border border-white">
                   <ShieldCheck className="w-3 h-3 text-yellow-101" />
@@ -191,12 +191,12 @@ export const PackageDetailScreen = ({
                 onClick={() => onToggleSavePkg(pkg.id)}
                 className={`w-full py-3 border text-sm font-extrabold rounded-2xl flex items-center justify-center space-x-2 transition bg-white ${
                   isSavedPkg
-                    ? 'border-[#ff5a5f] text-[#ff5a5f] bg-[#ff5a5f]/5'
+                    ? 'border-emerald-600 text-emerald-600 bg-emerald-500/5'
                     : 'border-gray-200 text-gray-600 hover:border-gray-300'
                 }`}
                 id="btn-toggle-bookmark-pkg"
               >
-                <Bookmark className={`w-4.5 h-4.5 ${isSavedPkg ? 'fill-[#ff5a5f]' : ''}`} />
+                <Bookmark className={`w-4.5 h-4.5 ${isSavedPkg ? 'fill-emerald-600' : ''}`} />
                 <span>{isSavedPkg ? 'Saved to Wishlist' : 'Save to Wishlist'}</span>
               </button>
             </div>

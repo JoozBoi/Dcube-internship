@@ -90,7 +90,7 @@ export const DetailScreen = ({
             <MapPin className="w-3.5 h-3.5" />
             <span>{post.location}</span>
           </span>
-          <span className="px-3 py-1 bg-[#ff5a5f]/10 text-[#ff5a5f] text-xs font-bold rounded-full flex items-center space-x-1">
+          <span className="px-3 py-1 bg-emerald-50 text-emerald-700 text-xs font-bold rounded-full flex items-center space-x-1">
             <Calendar className="w-3.5 h-3.5" />
             <span>{post.duration}</span>
           </span>
@@ -125,7 +125,7 @@ export const DetailScreen = ({
         {/* Timeline Itinerary Section */}
         <div className="space-y-4" id="experience-timeline-container">
           <h3 className="text-xl font-extrabold text-gray-800 tracking-tight flex items-center mb-6">
-            <span className="w-1 bg-[#ff5a5f] h-6 rounded mr-2.5"></span>
+            <span className="w-1 bg-emerald-600 h-6 rounded mr-2.5"></span>
             <span>Day-By-Day Curated Timeline</span>
           </h3>
 
@@ -196,13 +196,13 @@ export const DetailScreen = ({
               value={commentText}
               onChange={(e) => setCommentText(e.target.value)}
               placeholder="What do you think about this itinerary? Ask or share advice..."
-              className="w-full border border-gray-200 rounded-xl p-3.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#ff5a5f] focus:bg-white focus:ring-offset-1 transition"
+              className="w-full border border-gray-200 rounded-xl p-3.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:ring-offset-1 transition"
               id="comment-input-area"
             />
             <div className="flex justify-end">
               <button
                 type="submit"
-                className="px-5 py-2.5 bg-[#ff5a5f] hover:bg-[#eb4b50] text-white font-bold text-xs sm:text-sm rounded-xl transition"
+                className="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs sm:text-sm rounded-xl transition"
                 id="btn-post-comment"
               >
                 Post Comment

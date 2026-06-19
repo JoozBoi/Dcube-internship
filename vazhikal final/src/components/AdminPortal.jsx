@@ -30,14 +30,14 @@ export const AdminPortal = ({
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8" id="admin-columns-split">
         
         {/* Left Navigation Rails panel */}
-        <div className="lg:col-span-1 bg-gray-950 text-gray-400 rounded-3xl p-6 flex flex-col justify-between shadow-lg" id="admin-left-sidebar">
+        <div className="lg:col-span-1 bg-white border border-gray-150 text-gray-500 rounded-3xl p-6 flex flex-col justify-between shadow-sm h-fit" id="admin-left-sidebar">
           <div className="space-y-6">
-            <div className="text-center pb-4 border-b border-gray-800">
-              <div className="w-14 h-14 bg-red-500/10 rounded-full flex items-center justify-center mx-auto text-red-500 border border-red-500/30">
+            <div className="text-center pb-4 border-b border-gray-100">
+              <div className="w-14 h-14 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto text-emerald-600 border border-emerald-500/20">
                 <ShieldAlert className="w-7 h-7" />
               </div>
-              <h4 className="mt-3 font-extrabold text-white text-sm">Clearance Agent</h4>
-              <span className="text-[10px] text-red-400 font-extrabold uppercase tracking-widest">Admin Control Node</span>
+              <h4 className="mt-3 font-extrabold text-gray-800 text-sm">Clearance Agent</h4>
+              <span className="text-[10px] text-emerald-600 font-extrabold uppercase tracking-widest">Admin Control Node</span>
             </div>
 
             <nav className="space-y-1.5" id="admin-sidemenu">
@@ -45,8 +45,8 @@ export const AdminPortal = ({
                 onClick={() => setActiveAdminTab('moderation')}
                 className={`w-full text-left py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-3 transition-colors ${
                   activeAdminTab === 'moderation'
-                    ? 'bg-[#ff5a5f] text-white shadow-sm'
-                    : 'hover:bg-gray-900 hover:text-white'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                 }`}
               >
                 <Flag className="w-4.5 h-4.5" />
@@ -57,8 +57,8 @@ export const AdminPortal = ({
                 onClick={() => setActiveAdminTab('dashboard')}
                 className={`w-full text-left py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-3 transition-colors ${
                   activeAdminTab === 'dashboard'
-                    ? 'bg-[#ff5a5f] text-white shadow-sm'
-                    : 'hover:bg-gray-900 hover:text-white'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                 }`}
               >
                 <Activity className="w-4.5 h-4.5" />
@@ -67,10 +67,10 @@ export const AdminPortal = ({
             </nav>
           </div>
 
-          <div className="bg-gray-900/60 p-4 rounded-2xl border border-gray-800 text-center text-xs">
-            <Clock className="w-5 h-5 text-red-400 mx-auto mb-1 animate-pulse" />
-            <h5 className="font-extrabold text-white">Security Log</h5>
-            <span className="text-[10px] block text-gray-500 mt-1 leading-normal font-mono">24 Queue Tasks Left</span>
+          <div className="bg-gray-50 border border-gray-100 p-4 rounded-2xl text-center text-xs mt-6">
+            <Clock className="w-5 h-5 text-emerald-600 mx-auto mb-1 animate-pulse" />
+            <h5 className="font-extrabold text-gray-800">Security Log</h5>
+            <span className="text-[10px] block text-gray-400 mt-1 leading-normal font-mono">24 Queue Tasks Left</span>
           </div>
         </div>
 
@@ -151,7 +151,7 @@ export const AdminPortal = ({
               <div className="bg-white border border-gray-100 rounded-3xl p-6 sm:p-8 shadow-sm">
                 <h3 className="text-lg font-extrabold text-gray-900 mb-6 flex items-center justify-between border-b border-gray-55 pb-4">
                   <span className="flex items-center">
-                    <ShieldAlert className="w-5 h-5 mr-2 text-[#ff5a5f]" />
+                    <ShieldAlert className="w-5 h-5 mr-2 text-emerald-600" />
                     Flagged Post Reports
                   </span>
                   <span className="text-xs px-2.5 py-0.5 bg-red-50 text-red-600 font-bold rounded-full">

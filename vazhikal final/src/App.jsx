@@ -14,12 +14,20 @@ import { PackageDetailScreen } from './components/PackageDetailScreen';
 import { AgencyWorkspace } from './components/AgencyWorkspace';
 import { AdminPortal } from './components/AdminPortal';
 import { AISearchScreen } from './components/AISearchScreen';
+import { CreatePostScreen } from './components/CreatePostScreen';
 import { ShieldAlert, Info, ArrowRight } from 'lucide-react';
 
 export default function App() {
   // Navigation & Role states
   const [currentRole, setCurrentRole] = useState('traveller');
   const [currentScreen, setCurrentScreen] = useState('onboarding');
+
+  // Registered accounts for testing dynamic login/signup
+  const [users, setUsers] = useState([
+    { username: 'SaraWanderer', email: 'sara@example.com', password: 'secret123', role: 'traveller' },
+    { username: 'admin', email: 'admin@vazhikal.io', password: '99238382', role: 'admin' },
+    { username: 'EverestTrek', email: 'info@everesttrekkers.np', password: 'agency123', role: 'agency', companyName: 'Everest Trekkers Co.' },
+  ]);
 
   // Unified global registers
   const [posts, setPosts] = useState(initialPosts);
@@ -240,12 +248,36 @@ export default function App() {
     );
   };
 
+  const handleAddPost = (title, location, description, cost, duration, highlights, imageUrl, dayByDay = []) => {
+    const newPost = {
+      id: 'custom-post-' + Date.now(),
+      author: currentRole === 'traveller' ? 'Sara Wanderer' : 'Vazhikal Member',
+      authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+      timeAgo: 'Just now',
+      location: location || 'Anywhere',
+      title: title,
+      description: description,
+      cost: cost || '$0 USD',
+      duration: duration || '1 Day',
+      highlights: highlights ? highlights.split(',').map(h => h.trim()) : [],
+      imageUrl: imageUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1000',
+      votes: 1,
+      commentsCount: 0,
+      comments: [],
+      dayByDay: dayByDay
+    };
+    setPosts(prev => [newPost, ...prev]);
+  };
+
   // Visual View dispatch router
   const renderCurrentView = () => {
     switch (currentScreen) {
       case 'onboarding':
         return (
           <OnboardingScreen
+            users={users}
+            onRegisterUser={(u) => setUsers(prev => [...prev, u])}
+            verifications={verifications}
             onAuthenticate={(role) => {
               setCurrentRole(role);
               setCurrentScreen('feed');
@@ -272,6 +304,26 @@ export default function App() {
             savedPostIds={savedPostIds}
             onToggleSavePost={handleToggleSavePost}
             searchTerm={searchTerm}
+            currentRole={currentRole}
+            onAddPost={handleAddPost}
+            onRatePackage={(packageId, score) => {
+              setPackages(prev => prev.map(p => {
+                if (p.id === packageId) {
+                  const currentCount = p.stayReviewsCount || p.reviewsCount || 12;
+                  const currentRating = p.stayRating || p.rating || 4.8;
+                  const newCount = currentCount + 1;
+                  const newRating = Number(((currentRating * currentCount + score) / newCount).toFixed(1));
+                  return {
+                    ...p,
+                    stayRating: newRating,
+                    stayReviewsCount: newCount,
+                    rating: newRating,
+                    reviewsCount: newCount
+                  };
+                }
+                return p;
+              }));
+            }}
           />
         );
 
@@ -311,6 +363,14 @@ export default function App() {
           />
         );
 
+      case 'create-post':
+        return (
+          <CreatePostScreen
+            onAddPost={handleAddPost}
+            onBackToFeed={() => setCurrentScreen('feed')}
+          />
+        );
+
       default:
         return <div className="p-8 text-center text-xs">Screen viewport routing invalid/out-of-bounds.</div>;
     }
@@ -337,8 +397,8 @@ export default function App() {
 
       {/* Role specific notification banner helper */}
       {currentScreen !== 'onboarding' && currentRole !== 'traveller' && (
-        <div className="bg-[#ff5a5f] text-white py-2 px-4 shadow-inner text-center text-xs font-semibold flex items-center justify-center space-x-2 relative" id="role-alert-ribbon">
-          <ShieldAlert className="w-4 h-4 text-white" />
+        <div className="bg-emerald-50 border-b border-emerald-100/70 text-emerald-800 py-2.5 px-4 text-center text-xs font-semibold flex items-center justify-center space-x-2 relative" id="role-alert-ribbon">
+          <ShieldAlert className="w-4 h-4 text-emerald-600" />
           <span>
             {currentRole === 'agency' 
               ? 'You are currently inside the Travel Agency Space. Proceed to your workspace console to create or manage listings.'
@@ -346,16 +406,16 @@ export default function App() {
           </span>
           <button
             onClick={() => {
-              if (currentRole === 'agency') {
-                setCurrentScreen('feed'); // TBD / workspace toggle
-              }
+              setSelectedPackageId(null);
+              setSelectedPostId(null);
+              setCurrentScreen('feed');
             }}
-            className="underline ml-2 text-white hover:opacity-90 flex items-center bg-black/10 hover:bg-black/15 px-2 py-0.5 rounded transition"
+            className="underline ml-2 text-emerald-900 hover:text-emerald-955 flex items-center bg-emerald-100/80 hover:bg-emerald-200/60 px-2 py-0.5 rounded transition"
           >
             {currentRole === 'agency' ? (
-              <span onClick={() => { setSelectedPackageId(null); setSelectedPostId(null); setCurrentScreen('ai-search'); }}>Workspace Console</span>
+              <span>Workspace Console</span>
             ) : (
-              <span onClick={() => { setSelectedPackageId(null); setSelectedPostId(null); setCurrentScreen('feed'); }}>Security Logs Portal</span>
+              <span>Security Logs Portal</span>
             )}
             <ArrowRight className="w-3 h-3 ml-1" />
           </button>

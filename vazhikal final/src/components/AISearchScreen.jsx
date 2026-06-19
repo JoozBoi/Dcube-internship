@@ -109,7 +109,7 @@ export const AISearchScreen = ({
               placeholder="Where do you want to go? Tell us your vibe..."
               value={vibeInput}
               onChange={(e) => setVibeInput(e.target.value)}
-              className="w-full pl-6 pr-32 py-4 border border-gray-200 rounded-2xl text-sm sm:text-base bg-gray-50/50 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#ff5a5f] focus:bg-white focus:ring-offset-1 transition-all font-semibold"
+              className="w-full pl-6 pr-32 py-4 border border-gray-200 rounded-2xl text-sm sm:text-base bg-gray-50/50 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white focus:ring-offset-1 transition-all font-semibold"
               id="ai-vibe-query-input"
             />
             
@@ -208,7 +208,7 @@ export const AISearchScreen = ({
               <div className="space-y-1">
                 <span className="text-[10px] text-gray-400 font-extrabold uppercase">Duration</span>
                 <span className="text-sm font-black text-gray-800 flex items-center">
-                  <Calendar className="w-4 h-4 text-[#ff5a5f] mr-1" />
+                  <Calendar className="w-4 h-4 text-emerald-600 mr-1" />
                   {generatedResult.duration}
                 </span>
               </div>
@@ -222,7 +222,7 @@ export const AISearchScreen = ({
 
             {/* AI description report */}
             <div className="space-y-2">
-              <h4 className="text-sm font-black text-gray-800 uppercase tracking-widest text-[#ff5a5f]">Platform Evaluation</h4>
+              <h4 className="text-sm font-black text-gray-800 uppercase tracking-widest text-emerald-600">Platform Evaluation</h4>
               <p className="text-gray-600 text-sm leading-relaxed">{generatedResult.description}</p>
             </div>
 
@@ -269,7 +269,7 @@ export const AISearchScreen = ({
                 <button
                   type="button"
                   onClick={handleSaveAndShareToFeed}
-                  className="w-full sm:w-auto px-6 py-3.5 bg-[#ff5a5f] hover:bg-[#eb4b50] text-white text-xs sm:text-sm font-black rounded-2xl shadow-md hover:shadow-lg flex items-center justify-center space-x-2 transition"
+                  className="w-full sm:w-auto px-6 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs sm:text-sm font-black rounded-2xl shadow-md hover:shadow-lg flex items-center justify-center space-x-2 transition"
                   id="btn-register-ai-itinerary"
                 >
                   <Compass className="w-5 h-5 animate-spin-slow" />

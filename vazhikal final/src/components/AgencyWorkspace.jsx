@@ -31,6 +31,7 @@ export const AgencyWorkspace = ({
   const [formPrice, setFormPrice] = useState('');
   const [formDuration, setFormDuration] = useState('7 Days, 6 Nights');
   const [formDescription, setFormDescription] = useState('');
+  const [formImageUrl, setFormImageUrl] = useState('');
 
   // Feed/Form loading for edit
   const handleLoadEdit = (pkg) => {
@@ -40,6 +41,7 @@ export const AgencyWorkspace = ({
     setFormPrice(pkg.price.toString());
     setFormDuration(pkg.duration);
     setFormDescription(pkg.description);
+    setFormImageUrl(pkg.imageUrl || '');
     setIsDialogOpen(true);
   };
 
@@ -50,6 +52,7 @@ export const AgencyWorkspace = ({
     setFormPrice('1500');
     setFormDuration('7 Days, 6 Nights');
     setFormDescription('');
+    setFormImageUrl('');
     setIsDialogOpen(true);
   };
 
@@ -67,7 +70,8 @@ export const AgencyWorkspace = ({
           destination: formDestination,
           price: Number(formPrice),
           duration: formDuration,
-          description: formDescription
+          description: formDescription,
+          imageUrl: formImageUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1000'
         };
         onEditPackage(updated);
       }
@@ -80,8 +84,8 @@ export const AgencyWorkspace = ({
         duration: formDuration,
         agencyName: 'Gulliver Travels Ltd. (Workspace)',
         isVerifiedAgency: true,
-        imageUrl: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1000',
-        imageAlt: 'Scenic tropical beach shoreline',
+        imageUrl: formImageUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1000',
+        imageAlt: formTitle || 'Scenic tropical beach shoreline',
         price: Number(formPrice),
         description: formDescription || 'An incredible curated journey designed directly on our professional Workspace Dashboard.',
         inclusions: [
@@ -114,16 +118,23 @@ export const AgencyWorkspace = ({
     <div className="max-w-7xl mx-auto px-4 py-8" id="agency-workspace-screen">
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8" id="workspace-two-column-split">
         
-        {/* LEFT COLUMN: Sidebar Navigation Panel (Mint `#c7f3de` background context) */}
-        <div className="lg:col-span-1 bg-[#c7f3de]/80 border border-emerald-100 rounded-3xl p-6 flex flex-col justify-between" id="agency-left-sidebar">
+        {/* LEFT COLUMN: Sidebar Navigation Panel (Clean Light Card context) */}
+        <div className="lg:col-span-1 bg-white border border-gray-150 rounded-3xl p-6 flex flex-col justify-between shadow-sm h-fit" id="agency-left-sidebar">
           <div className="space-y-6">
             {/* Host Metadata */}
-            <div className="text-center pb-4 border-b border-white/40">
-              <div className="w-16 h-16 bg-white rounded-full flex items-center justify-center mx-auto text-emerald-850 font-black text-xl shadow border-2 border-emerald-200">
+            <div className="text-center pb-4 border-b border-gray-100">
+              <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-600 font-black text-xl shadow-sm border border-emerald-100">
                 G
               </div>
               <h4 className="mt-3 font-extrabold text-gray-800 text-sm truncate leading-none">Gulliver Travels</h4>
-              <span className="text-[10px] text-emerald-700 font-extrabold tracking-wide uppercase">Agency Workspace</span>
+              <span className="text-[10px] text-gray-400 font-extrabold tracking-wide uppercase">Agency Workspace</span>
+              
+              {/* SHOW ACCOUNT STATS: Verification timestamp and start tracking info */}
+              <div className="mt-3.5 py-2.5 px-3.5 bg-gray-50 rounded-xl text-[10px] text-left text-gray-500 font-semibold space-y-1 block border border-gray-100 leading-snug">
+                <p>📍 Started: <span className="font-extrabold text-gray-800">June 15, 2026</span></p>
+                <p>🛡️ Verified Code: <span className="font-extrabold text-emerald-600">VAZ-2026-98</span></p>
+                <p>Status: <span className="font-extrabold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded text-[9px] border border-emerald-100">Licensed & Active</span></p>
+              </div>
             </div>
 
             {/* Menu Items */}
@@ -132,8 +143,8 @@ export const AgencyWorkspace = ({
                 onClick={() => setActiveWorkspaceTab('inventory')}
                 className={`w-full text-left py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-3 transition-colors ${
                   activeWorkspaceTab === 'inventory'
-                    ? 'bg-[#ff5a5f] text-white shadow-sm'
-                    : 'text-gray-700 hover:bg-white/45'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                 }`}
               >
                 <Compass className="w-4.5 h-4.5" />
@@ -144,8 +155,8 @@ export const AgencyWorkspace = ({
                 onClick={() => setActiveWorkspaceTab('bookings')}
                 className={`w-full text-left py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-3 transition-colors ${
                   activeWorkspaceTab === 'bookings'
-                    ? 'bg-[#ff5a5f] text-white shadow-sm'
-                    : 'text-gray-700 hover:bg-white/45'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                 }`}
               >
                 <Plus className="w-4.5 h-4.5 rotate-45" />
@@ -156,8 +167,8 @@ export const AgencyWorkspace = ({
                 onClick={() => setActiveWorkspaceTab('analytics')}
                 className={`w-full text-left py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-3 transition-colors ${
                   activeWorkspaceTab === 'analytics'
-                    ? 'bg-[#ff5a5f] text-white shadow-sm'
-                    : 'text-gray-700 hover:bg-white/45'
+                    ? 'bg-emerald-600 text-white shadow-sm'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-800'
                 }`}
               >
                 <BarChart3 className="w-4.5 h-4.5" />
@@ -166,18 +177,9 @@ export const AgencyWorkspace = ({
             </nav>
           </div>
 
-          {/* Floating Workspace CTA */}
-          <div className="mt-8 bg-white/70 border border-white rounded-2xl p-4 text-center shadow-sm" id="floating-agency-cta">
-            <Sparkles className="w-5 h-5 text-emerald-600 mx-auto mb-1 animate-pulse" />
-            <h5 className="font-extrabold text-gray-800 text-xs leading-tight">Create & List</h5>
-            <p className="text-[10px] text-gray-500 leading-normal mt-1 mb-3">Publish custom premium packages directly on the marketplace.</p>
-            <button
-              onClick={handleOpenCreate}
-              className="w-full py-2 bg-emerald-700 hover:bg-emerald-800 text-white font-bold text-xs rounded-xl"
-              id="floating-create-new-pkg"
-            >
-              List New Package +
-            </button>
+          {/* Floating Workspace CTA - REMOVED the redundant duplicate create list option */}
+          <div className="mt-8 bg-gray-50 border border-gray-100 rounded-2xl p-4 text-center text-[10px] text-gray-400 font-semibold leading-normal font-mono">
+             <span>Vazhikal Agency Control Panel v1.4</span>
           </div>
         </div>
 
@@ -343,7 +345,7 @@ export const AgencyWorkspace = ({
                   required
                   value={formTitle}
                   onChange={(e) => setFormTitle(e.target.value)}
-                  className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#ff5a5f]"
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   placeholder="e.g. 5-Day Alpine Chalet Getaway"
                   id="form-title"
                 />
@@ -357,7 +359,7 @@ export const AgencyWorkspace = ({
                     required
                     value={formDestination}
                     onChange={(e) => setFormDestination(e.target.value)}
-                    className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#ff5a5f]"
+                    className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                     placeholder="e.g. Kyoto, Japan"
                     id="form-destination"
                   />
@@ -370,7 +372,7 @@ export const AgencyWorkspace = ({
                       required
                       value={formPrice}
                       onChange={(e) => setFormPrice(e.target.value)}
-                      className="w-full border border-gray-200 rounded-xl pl-8 pr-4 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#ff5a5f]"
+                      className="w-full border border-gray-200 rounded-xl pl-8 pr-4 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                       placeholder="e.g. 1950"
                       id="form-price"
                     />
@@ -392,13 +394,57 @@ export const AgencyWorkspace = ({
               </div>
 
               <div>
+                <label className="block text-[10px] font-black uppercase tracking-wider text-gray-400 mb-1.5">Cover Image (URL)</label>
+                <input
+                  type="text"
+                  value={formImageUrl}
+                  onChange={(e) => setFormImageUrl(e.target.value)}
+                  className="w-full border border-gray-200 rounded-xl px-4 py-2 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+                  placeholder="e.g. https://images.unsplash.com/photo-..."
+                  id="form-image-url"
+                />
+                <span className="text-[9px] text-gray-400 block mt-1">Specify any web layout photo URL, or leave blank to load our scenic beach preset.</span>
+              </div>
+
+              {/* MEDIA ATTACHMENTS OPTION WHILE PACKAGE IS BEING CREATED */}
+              <div className="bg-gray-50 p-4 rounded-2xl border border-gray-150 space-y-3">
+                <label className="block text-[10px] font-black uppercase tracking-wider text-gray-400">Package Media Items</label>
+                
+                {/* Drag and Drop area for attachments */}
+                <div 
+                  className="border-2 border-dashed border-gray-200 hover:border-emerald-500/50 bg-white rounded-xl p-4 text-center cursor-pointer transition"
+                  onDragOver={(e) => { e.preventDefault(); }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                      alert(`Successfully drafted media file: "${e.dataTransfer.files[0].name}" for attachment in package!`);
+                    }
+                  }}
+                  onClick={() => {
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.multiple = true;
+                    input.onchange = (e) => {
+                      if (e.target.files && e.target.files.length > 0) {
+                        alert(`Successfully selected ${e.target.files.length} custom brochure pictures for this package!`);
+                      }
+                    };
+                    input.click();
+                  }}
+                >
+                  <p className="text-[10px] text-gray-500 font-bold">Drag & drop files or click to add media assets</p>
+                  <span className="text-[8px] text-gray-400 block">Brochures, scenic shots, itinerary outlines (PDF, PNG, JPG)</span>
+                </div>
+              </div>
+
+              <div>
                 <label className="block text-[10px] font-black uppercase tracking-wider text-gray-400 mb-1.5">Description Summary</label>
                 <textarea
                   rows={3}
                   value={formDescription}
                   onChange={(e) => setFormDescription(e.target.value)}
                   placeholder="Summarize key features, luxury stay features, and gourmet highlights..."
-                  className="w-full border border-gray-200 rounded-xl p-3.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-[#ff5a5f]"
+                  className="w-full border border-gray-200 rounded-xl p-3.5 text-sm bg-gray-50 focus:outline-none focus:ring-2 focus:ring-emerald-500"
                   id="form-description"
                 />
               </div>
@@ -413,7 +459,7 @@ export const AgencyWorkspace = ({
                 </button>
                 <button
                   type="submit"
-                  className="flex-1 py-3 bg-[#ff5a5f] hover:bg-[#eb4b50] text-white rounded-xl text-xs font-bold shadow-md"
+                  className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-md"
                   id="btn-save-pack"
                 >
                   {editingPkgId ? 'Update Listing' : 'Publish Active Listing'}
