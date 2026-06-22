@@ -1,12 +1,156 @@
 import React, { useState } from 'react';
-import { ArrowLeft, MapPin, Calendar, Heart, Share2, CornerDownRight, Trash2, ShieldAlert } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Heart, Share2, CornerDownRight, Trash2, ShieldAlert, Flag } from 'lucide-react';
+// Recursive component to render notes and replies infinitely nested
+const CommentNode = ({
+  comment,
+  postId,
+  currentAuthorName,
+  currentRole,
+  onDeleteComment,
+  onReportComment,
+  onAddComment,
+  activeReplyId,
+  setActiveReplyId,
+  replyTextMap,
+  setReplyTextMap,
+  depth = 0,
+}) => {
+  const hasReplies = comment.replies && comment.replies.length > 0;
+
+  const handlePostReply = (commentId) => {
+    const txt = replyTextMap[commentId];
+    if (!txt || !txt.trim()) return;
+    onAddComment(postId, txt, commentId);
+    setReplyTextMap((prev) => ({ ...prev, [commentId]: '' }));
+    setActiveReplyId(null);
+  };
+
+  return (
+    <div className={`mt-3 ${depth > 0 ? 'pl-4 sm:pl-6 border-l-2 border-emerald-500/10 ml-2 sm:ml-4' : ''}`} id={`comment-node-${comment.id}`}>
+      <div className="bg-white/80 backdrop-blur-xs p-4 rounded-2xl border border-gray-100/80 shadow-xs hover:border-gray-250/20 transition-all">
+        {/* Main Content Info */}
+        <div className="flex items-start space-x-3">
+          <img
+            src={comment.authorAvatar || "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150"}
+            alt={comment.author}
+            className={`${depth > 0 ? 'w-7 h-7 sm:w-8 sm:h-8' : 'w-9 h-9'} rounded-full object-cover border border-gray-100 shrink-0 shadow-xs`}
+            referrerPolicy="no-referrer"
+          />
+          <div className="flex-1 space-y-1.5 min-w-0">
+            {/* Header info bar */}
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-2">
+                <span className="text-xs sm:text-sm font-extrabold text-gray-800 truncate">{comment.author}</span>
+                {comment.isVerified && (
+                  <span className="px-1.5 py-0.5 bg-blue-50 text-blue-600 text-[8px] font-black uppercase rounded-sm border border-blue-100/50">Verified</span>
+                )}
+                <span className="text-[10px] text-gray-400 font-medium whitespace-nowrap">{comment.timeAgo}</span>
+              </div>
+              
+              {/* Delete logic */}
+              {(currentRole === 'admin' || comment.author === currentAuthorName) && (
+                <button
+                  onClick={() => onDeleteComment(postId, comment.id)}
+                  className="text-gray-400 hover:text-red-500 hover:bg-red-50 p-1 rounded-lg transition-colors"
+                  title="Delete Comment"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+
+            {/* Comment Message Body */}
+            <p className="text-gray-650 text-xs sm:text-sm leading-relaxed break-words">{comment.text}</p>
+            
+            {/* Thread micro actions */}
+            <div className="flex items-center space-x-4 pt-1 border-t border-gray-50/40">
+              <button
+                onClick={() => setActiveReplyId(activeReplyId === comment.id ? null : comment.id)}
+                className={`text-[9px] sm:text-[10px] font-extrabold uppercase tracking-wider transition-colors ${
+                  activeReplyId === comment.id ? 'text-amber-600' : 'text-emerald-600 hover:text-emerald-800'
+                }`}
+              >
+                {activeReplyId === comment.id ? 'Cancel Reply' : 'Reply'}
+              </button>
+
+              {/* Report system */}
+              {comment.author !== currentAuthorName && (
+                <button
+                  onClick={() => {
+                    if (onReportComment) {
+                      onReportComment(postId, comment.id, comment.text, comment.author);
+                    } else {
+                      alert('This comment has been successfully flagged for admin moderation.');
+                    }
+                  }}
+                  className="text-[9px] sm:text-[10px] font-black text-gray-400 hover:text-red-500 uppercase tracking-widest flex items-center transition-colors"
+                  title="Flag / Report Comment"
+                >
+                  <Flag className="w-3 h-3 mr-0.5" />
+                  <span>Report</span>
+                </button>
+              )}
+            </div>
+
+            {/* Reply textfield inline */}
+            {activeReplyId === comment.id && (
+              <div className="mt-3 flex items-start space-x-2 p-2 bg-gray-50 border border-gray-100 rounded-xl animate-in fade-in slide-in-from-top-1 duration-100">
+                <textarea
+                  placeholder={`Write a reply to ${comment.author}...`}
+                  rows={2}
+                  value={replyTextMap[comment.id] || ''}
+                  onChange={(e) => setReplyTextMap(prev => ({ ...prev, [comment.id]: e.target.value }))}
+                  className="flex-1 border border-gray-200 rounded-lg p-2 text-xs sm:text-sm bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+                />
+                <button
+                  onClick={() => handlePostReply(comment.id)}
+                  className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 text-white text-[11px] font-extrabold rounded-lg shrink-0 shadow-sm transition-all"
+                >
+                  Post
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Recurse the replies */}
+      {hasReplies && (
+        <div className="space-y-1.5 mt-2">
+          {comment.replies.map((reply) => (
+            <CommentNode
+              key={reply.id}
+              comment={reply}
+              postId={postId}
+              currentAuthorName={currentAuthorName}
+              currentRole={currentRole}
+              onDeleteComment={onDeleteComment}
+              onReportComment={onReportComment}
+              onAddComment={onAddComment}
+              activeReplyId={activeReplyId}
+              setActiveReplyId={setActiveReplyId}
+              replyTextMap={replyTextMap}
+              setReplyTextMap={setReplyTextMap}
+              depth={depth + 1}
+            />
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
 export const DetailScreen = ({
   post,
   onBackToFeed,
   onAddComment,
   onDeleteComment,
   onAddFlaggedPost,
+  currentRole = 'traveller',
+  onDeletePost,
+  onReportComment,
 }) => {
+  const currentAuthorName = currentRole === 'admin' ? 'System Administrator' : currentRole === 'agency' ? 'Host Agent' : 'Sojourn Explorer';
   const [commentText, setCommentText] = useState('');
   const [replyTextMap, setReplyTextMap] = useState({});
   const [activeReplyId, setActiveReplyId] = useState(null);
@@ -63,19 +207,37 @@ export const DetailScreen = ({
           </div>
           
           <div className="flex items-center space-x-2">
-            <button
-              onClick={handleReportPost}
-              disabled={isReported}
-              className={`px-3.5 py-1.5 text-xs font-bold rounded-lg flex items-center space-x-1.5 transition ${
-                isReported 
-                  ? 'bg-red-50 text-red-500 cursor-not-allowed'
-                  : 'text-red-500 bg-red-50/50 hover:bg-red-50'
-              }`}
-              title="Report content"
-            >
-              <ShieldAlert className="w-4 h-4" />
-              <span>{isReported ? 'Reported ✓' : 'Report / Flag'}</span>
-            </button>
+            {currentRole === 'admin' ? (
+              <button
+                onClick={() => {
+                  if (window.confirm('Are you sure you want to permanently delete this post as an Administrator?')) {
+                    if (onDeletePost) {
+                      onDeletePost(post.id);
+                    }
+                    onBackToFeed();
+                  }
+                }}
+                className="px-3.5 py-1.5 text-xs font-bold rounded-lg flex items-center space-x-1.5 bg-red-650 hover:bg-red-700 text-white shadow-sm transition"
+                title="Delete this post permanently as Admin"
+              >
+                <Trash2 className="w-4 h-4 text-white" />
+                <span>Delete Post (Admin)</span>
+              </button>
+            ) : (
+              <button
+                onClick={handleReportPost}
+                disabled={isReported}
+                className={`px-3.5 py-1.5 text-xs font-bold rounded-lg flex items-center space-x-1.5 transition ${
+                  isReported 
+                    ? 'bg-red-50 text-red-500 cursor-not-allowed'
+                    : 'text-red-500 bg-red-50/50 hover:bg-red-50'
+                }`}
+                title="Report content"
+              >
+                <ShieldAlert className="w-4 h-4" />
+                <span>{isReported ? 'Reported ✓' : 'Report / Flag'}</span>
+              </button>
+            )}
           </div>
         </div>
 
@@ -212,107 +374,28 @@ export const DetailScreen = ({
         </form>
 
         {/* List of comment items on details page */}
-        <div className="space-y-6" id="comments-thread-lists">
+        <div className="space-y-4" id="comments-thread-lists">
           {post.comments.length === 0 ? (
             <div className="text-center py-6 text-gray-400 text-xs">
               Be the first to leave a friendly note below!
             </div>
           ) : (
             post.comments.map((comment) => (
-              <div key={comment.id} className="border-b border-gray-50 pb-5 last:border-0 last:pb-0" id={`comment-node-${comment.id}`}>
-                {/* Main Comment Node */}
-                <div className="flex items-start space-x-3">
-                  <img
-                    src={comment.authorAvatar}
-                    alt={comment.author}
-                    className="w-9 h-9 rounded-full object-cover border border-gray-100"
-                    referrerPolicy="no-referrer"
-                  />
-                  <div className="flex-1 space-y-1.5">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1.5">
-                        <span className="text-xs font-black text-gray-800">{comment.author}</span>
-                        {comment.isVerified && (
-                          <span className="px-1.5 py-0.5 bg-blue-100 text-blue-700 text-[9px] font-black uppercase rounded-sm">Verified</span>
-                        )}
-                        <span className="text-[10px] text-gray-400 font-medium">{comment.timeAgo}</span>
-                      </div>
-                      
-                      <button
-                        onClick={() => onDeleteComment(post.id, comment.id)}
-                        className="text-gray-400 hover:text-red-500 p-1 rounded"
-                        title="Delete Comment"
-                      >
-                        <Trash2 className="w-3.5 h-3.5" />
-                      </button>
-                    </div>
-
-                    <p className="text-gray-600 text-sm leading-relaxed">{comment.text}</p>
-                    
-                    {/* Inline reply action toggler */}
-                    <div className="flex items-center space-x-3 pt-1">
-                      <button
-                        onClick={() => setActiveReplyId(activeReplyId === comment.id ? null : comment.id)}
-                        className="text-[10px] font-black text-gray-400 hover:text-gray-800 uppercase tracking-widest"
-                      >
-                        {activeReplyId === comment.id ? 'Cancel' : 'Reply'}
-                      </button>
-                    </div>
-
-                    {/* Active inline reply form */}
-                    {activeReplyId === comment.id && (
-                      <div className="mt-3 flex items-start space-x-2 p-2 bg-gray-50 border border-gray-100 rounded-lg animate-in fade-in duration-100">
-                        <textarea
-                          placeholder={`Write a reply to ${comment.author}...`}
-                          rows={2}
-                          value={replyTextMap[comment.id] || ''}
-                          onChange={(e) => setReplyTextMap(prev => ({ ...prev, [comment.id]: e.target.value }))}
-                          className="flex-1 border border-gray-200 rounded-lg p-2 text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
-                        />
-                        <button
-                          onClick={() => handlePostReply(comment.id)}
-                          className="px-3 py-1.5 bg-gray-900 hover:bg-gray-800 text-white text-[10px] font-bold rounded-lg shrink-0"
-                        >
-                          Send
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
-
-                {/* Sub Nested comments/Replies rendering */}
-                {comment.replies && comment.replies.length > 0 && (
-                  <div className="mt-3 pl-8 sm:pl-10 space-y-3" id={`nested-replies-list-${comment.id}`}>
-                    {comment.replies.map((reply) => (
-                      <div key={reply.id} className="flex items-start space-x-2 bg-gray-50/50 p-3 rounded-2xl border border-gray-50" id={`reply-node-${reply.id}`}>
-                        <CornerDownRight className="w-4 h-4 text-gray-300 shrink-0 mt-1" />
-                        <img
-                          src={reply.authorAvatar}
-                          alt={reply.author}
-                          className="w-7 h-7 rounded-full object-cover border border-gray-100"
-                          referrerPolicy="no-referrer"
-                        />
-                        <div className="flex-1 space-y-1">
-                          <div className="flex items-center justify-between">
-                            <div className="flex items-center space-x-1.5">
-                              <span className="text-[11px] font-black text-gray-800">{reply.author}</span>
-                              <span className="text-[9px] text-gray-400 font-medium">{reply.timeAgo}</span>
-                            </div>
-                            <button
-                              onClick={() => onDeleteComment(post.id, reply.id, comment.id)}
-                              className="text-gray-400 hover:text-red-500 p-0.5 rounded"
-                              title="Delete Reply"
-                            >
-                              <Trash2 className="w-3 h-3" />
-                            </button>
-                          </div>
-                          <p className="text-gray-600 text-xs leading-relaxed">{reply.text}</p>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
+              <CommentNode
+                key={comment.id}
+                comment={comment}
+                postId={post.id}
+                currentAuthorName={currentAuthorName}
+                currentRole={currentRole}
+                onDeleteComment={onDeleteComment}
+                onReportComment={onReportComment}
+                onAddComment={onAddComment}
+                activeReplyId={activeReplyId}
+                setActiveReplyId={setActiveReplyId}
+                replyTextMap={replyTextMap}
+                setReplyTextMap={setReplyTextMap}
+                depth={0}
+              />
             ))
           )}
         </div>

@@ -105,20 +105,31 @@ export default function App() {
         text,
         timeAgo: 'Just now',
         votes: 0,
-        isVerified: currentRole === 'admin' || currentRole === 'agency'
+        isVerified: currentRole === 'admin' || currentRole === 'agency',
+        replies: []
       };
 
       let nextComments = [...p.comments];
 
       if (replyToCommentId) {
-        // Find comment parent
-        nextComments = nextComments.map(c => {
-          if (c.id !== replyToCommentId) return c;
-          return {
-            ...c,
-            replies: [...(c.replies || []), newC]
-          };
-        });
+        const addReplyRecursively = (comments, parentId, newReply) => {
+          return comments.map(c => {
+            if (c.id === parentId) {
+              return {
+                ...c,
+                replies: [...(c.replies || []), newReply]
+              };
+            }
+            if (c.replies && c.replies.length > 0) {
+              return {
+                ...c,
+                replies: addReplyRecursively(c.replies, parentId, newReply)
+              };
+            }
+            return c;
+          });
+        };
+        nextComments = addReplyRecursively(nextComments, replyToCommentId, newC);
       } else {
         nextComments.unshift(newC);
       }
@@ -131,29 +142,43 @@ export default function App() {
     }));
   };
 
-  const handleDeleteComment = (postId, commentId, replyToCommentId) => {
+  const handleDeleteComment = (postId, commentId) => {
     setPosts(prev => prev.map(p => {
       if (p.id !== postId) return p;
 
-      let nextComments = [...p.comments];
       let removedCount = 0;
 
-      if (replyToCommentId) {
-        nextComments = nextComments.map(c => {
-          if (c.id !== replyToCommentId) return c;
-          const origLen = c.replies?.length || 0;
-          const filteredReplies = (c.replies || []).filter(r => r.id !== commentId);
-          removedCount = origLen - filteredReplies.length;
-          return {
+      const deleteRecursively = (list) => {
+        const result = [];
+        for (const c of list) {
+          if (c.id === commentId) {
+            const countDescendants = (node) => {
+              let count = 1;
+              if (node.replies) {
+                for (const r of node.replies) {
+                  count += countDescendants(r);
+                }
+              }
+              return count;
+            };
+            removedCount += countDescendants(c);
+            continue;
+          }
+
+          let newReplies = c.replies || [];
+          if (newReplies.length > 0) {
+            newReplies = deleteRecursively(newReplies);
+          }
+
+          result.push({
             ...c,
-            replies: filteredReplies
-          };
-        });
-      } else {
-        const origLen = nextComments.length;
-        nextComments = nextComments.filter(c => c.id !== commentId);
-        removedCount = origLen - nextComments.length;
-      }
+            replies: newReplies
+          });
+        }
+        return result;
+      };
+
+      const nextComments = deleteRecursively(p.comments);
 
       return {
         ...p,
@@ -161,6 +186,34 @@ export default function App() {
         comments: nextComments
       };
     }));
+  };
+
+  const handleDeletePost = (postId) => {
+    setPosts(prev => prev.filter(p => p.id !== postId));
+  };
+
+  const handleReportComment = (postId, commentId, commentText, commentAuthor) => {
+    const post = posts.find(p => p.id === postId);
+    if (!post) return;
+
+    const newReport = {
+      id: 'cr_dyn_' + Date.now(),
+      username: commentAuthor,
+      postId: postId,
+      postTitle: post.title,
+      text: commentText,
+      reportsCount: 1
+    };
+
+    setCommentReports(prev => {
+      const existing = prev.find(r => r.username === commentAuthor && r.text === commentText);
+      if (existing) {
+        return prev.map(r => r.id === existing.id ? { ...r, reportsCount: r.reportsCount + 1 } : r);
+      }
+      return [newReport, ...prev];
+    });
+
+    alert('This comment has been successfully reported to the admin moderation queue.');
   };
 
   // 4. Verification and Submission arrays
@@ -361,6 +414,9 @@ export default function App() {
             onAddComment={handleAddComment}
             onDeleteComment={handleDeleteComment}
             onAddFlaggedPost={handleAddFlaggedPost}
+            currentRole={currentRole}
+            onDeletePost={handleDeletePost}
+            onReportComment={handleReportComment}
           />
         );
 
