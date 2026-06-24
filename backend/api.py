@@ -222,18 +222,22 @@ async def create_verification(payload: VerificationCreate, db: AsyncSession = De
     return verification_data(item)
 
 
-@verifications_router.post("", status_code=status.HTTP_201_CREATED)
-async def create_verification(payload: VerificationCreate, db: AsyncSession = Depends(get_db)):
-    item = Verification(id=str(uuid.uuid4()), **payload.model_dump())
-    db.add(item)
-    await db.commit()
-    await db.refresh(item)
-    return verification_data(item)
+
+
+
+
+
+
+
+
+
+
 
 
 def flagged_data(item: FlaggedPost) -> dict:
     return {"id": item.id, "postId": item.post_id, "reporterEmail": item.reporter_email,
             "reason": item.reason, "content": item.content, "status": item.status, "createdAt": item.created_at}
+
 
 
 @moderation_router.get("/flagged-posts")

@@ -535,7 +535,14 @@ export default function App() {
       {currentScreen !== 'onboarding' && (
         <TopNavBar
           currentRole={currentRole}
-          onRoleChange={handleRoleChange}
+          onRoleChange={(role) => {
+            // If user switches role while inside onboarding form, don't keep broken state.
+            setCurrentRole(role);
+            setSearchTerm('');
+            if (role !== 'traveller') setCurrentScreen('feed');
+            if (role === 'traveller') setCurrentScreen('feed');
+          }}
+
           currentScreen={currentScreen}
           onScreenChange={(screen) => {
             setCurrentScreen(screen);
@@ -590,7 +597,11 @@ export default function App() {
             onAddPackage={handleAddPackage}
             onEditPackage={handleEditPackage}
             onDeletePackage={handleDeletePackage}
+            onCreatePostClick={() => setCurrentScreen('create-post')}
+            agencyName={currentUser?.companyName || currentUser?.username}
           />
+
+
         ) : currentScreen === 'feed' && currentRole === 'admin' ? (
           <AdminPortal
             verifications={verifications}

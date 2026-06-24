@@ -13,14 +13,20 @@ import {
   Inbox,
   TrendingUp,
   MapPin,
-  CheckCircle2
+  CheckCircle2,
+  PlusCircle
 } from 'lucide-react';
 export const AgencyWorkspace = ({
   packages,
   onAddPackage,
   onEditPackage,
   onDeletePackage,
+  onCreatePostClick,
+  agencyName,
 }) => {
+
+
+
   const [activeWorkspaceTab, setActiveWorkspaceTab] = useState('inventory');
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [editingPkgId, setEditingPkgId] = useState(null);
@@ -107,7 +113,8 @@ export const AgencyWorkspace = ({
         stayRating: 5.0,
         stayReviewsCount: 14,
         stayValue: 650,
-        status: 'Active'
+        status: 'active'
+
       };
       await onAddPackage(newPkg);
     }
@@ -119,7 +126,8 @@ export const AgencyWorkspace = ({
   };
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-8" id="agency-workspace-screen">
+    <div className="max-w-7xl mx-auto px-4 py-8" id="agency-workspace-screen" data-agency-workspace>
+
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-8" id="workspace-two-column-split">
         
         {/* LEFT COLUMN: Sidebar Navigation Panel (Clean Light Card context) */}
@@ -130,8 +138,10 @@ export const AgencyWorkspace = ({
               <div className="w-16 h-16 bg-emerald-50 rounded-full flex items-center justify-center mx-auto text-emerald-600 font-black text-xl shadow-sm border border-emerald-100">
                 G
               </div>
-              <h4 className="mt-3 font-extrabold text-gray-800 text-sm truncate leading-none">Gulliver Travels</h4>
+              <h4 className="mt-3 font-extrabold text-gray-800 text-sm truncate leading-none">{agencyName || packages?.[0]?.agencyName || 'Agency Workspace'}</h4>
+
               <span className="text-[10px] text-gray-400 font-extrabold tracking-wide uppercase">Agency Workspace</span>
+
               
               {/* SHOW ACCOUNT STATS: Verification timestamp and start tracking info */}
               <div className="mt-3.5 py-2.5 px-3.5 bg-gray-50 rounded-xl text-[10px] text-left text-gray-500 font-semibold space-y-1 block border border-gray-100 leading-snug">
@@ -154,6 +164,17 @@ export const AgencyWorkspace = ({
                 <Compass className="w-4.5 h-4.5" />
                 <span>Inventory Management</span>
               </button>
+
+              <button
+                onClick={() => onCreatePostClick?.()}
+                className={`w-full text-left py-2.5 px-4 rounded-xl text-xs sm:text-sm font-bold flex items-center space-x-3 transition-colors ${
+                  'bg-emerald-50 text-emerald-700 border border-emerald-100 hover:bg-emerald-100'
+                }`}
+              >
+                <PlusCircle className="w-4.5 h-4.5" />
+                <span>Create Post (Trail)</span>
+              </button>
+
 
               <button
                 onClick={() => setActiveWorkspaceTab('bookings')}

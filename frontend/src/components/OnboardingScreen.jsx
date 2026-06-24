@@ -114,9 +114,11 @@ export const OnboardingScreen = ({
       const user = await api.login({ identifier: loginIdentifier, password: loginPassword, role: activeTab });
       onAuthenticate(user);
     } catch (error) {
+      // If credentials are wrong, keep the user on the login form for that tab.
       setLoginError(error.message || `Invalid username/email or password for the ${activeTab === 'traveller' ? 'Traveller' : 'Agency'} role.`);
     }
   };
+
 
   // Traveler Signup Submit
   const handleTravellerSignUp = async (e) => {
@@ -153,7 +155,7 @@ export const OnboardingScreen = ({
     setTravellerPassword('');
   };
 
-  // Agency Signup Submit (verify if approved)
+  // Agency Signup Submit (open to everyone; verification is optional now)
   const handleAgencySignUp = async (e) => {
     e.preventDefault();
     setAgencyRegisterError('');
@@ -164,29 +166,16 @@ export const OnboardingScreen = ({
       return;
     }
 
-    const testId = agencyVerifyId.trim().toLowerCase();
+    const entered = agencyVerifyId.trim();
+    const emailCandidate = entered;
+    const companyNameCandidate = entered.includes('@') ? 'New Agency' : entered;
 
-    // Check if there is an approved verification
-   const verifiedItem = verifications.find(v =>
-  v.status === 'approved' &&
-  (v.agencyEmail?.toLowerCase() === testId ||
-   v.companyName?.toLowerCase() === testId)
-);
-
-    if (!verifiedItem) {
-      setAgencyRegisterError(
-        "Refused: No approved agency license verification was found for this Company Email or Name. If your status is still pending, please wait for the Admin's clearance or apply below."
-      );
-      return;
-    }
-
-    // Register approved agency
     const newUser = {
       username: agencyUsername,
-      email: verifiedItem.agencyEmail,
+      email: emailCandidate,
       password: agencyPassword,
       role: 'agency',
-      companyName: verifiedItem.companyName
+      companyName: companyNameCandidate,
     };
 
     try {
@@ -197,17 +186,16 @@ export const OnboardingScreen = ({
       return;
     }
 
-    // Prompt user to log in and switch back to Login view
-    setSignupSuccess(`Successfully registered Everest Trekker platform credentials for "${verifiedItem.companyName}"! Please enter your password to log in.`);
-    setLoginIdentifier(verifiedItem.agencyEmail);
+    setSignupSuccess(`Successfully registered your agency account. Verification is optional—upload documents later to gain a verified badge.`);
+    setLoginIdentifier(emailCandidate);
     setLoginPassword('');
     setIsLoggingIn(true);
 
-    // Clear registration inputs
     setAgencyVerifyId('');
     setAgencyUsername('');
     setAgencyPassword('');
   };
+
 
   return (
     <div className="min-h-[calc(100vh-4rem)] flex items-center justify-center p-4 bg-[#9ff5b5]/10" id="onboarding-page-bg">
