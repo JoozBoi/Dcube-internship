@@ -1,0 +1,6 @@
+{
+  "name": "Vazhikal",
+  "description": "A collaborative social platform and agency marketplace for custom curated travel itineraries, incorporating server-side AI-powered discovery.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
