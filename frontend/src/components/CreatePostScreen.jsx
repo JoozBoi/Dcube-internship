@@ -13,6 +13,7 @@ export const CreatePostScreen = ({ onAddPost, onBackToFeed }) => {
   const [mediaUrls, setMediaUrls] = useState([]);
   const [isDragging, setIsDragging] = useState(false);
   const [uploadedFiles, setUploadedFiles] = useState([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const fileInputRef = useRef(null);
 
   const [dayByDay, setDayByDay] = useState([
@@ -76,7 +77,7 @@ export const CreatePostScreen = ({ onAddPost, onBackToFeed }) => {
     setMediaUrls(prev => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!title.trim() || !location.trim() || !description.trim()) {
       alert('Please fill out the Title, Location, and Description of your trail!');
@@ -96,9 +97,16 @@ export const CreatePostScreen = ({ onAddPost, onBackToFeed }) => {
       badges: item.badges ? item.badges.split(',').map(b => b.trim()).filter(Boolean) : []
     }));
 
-    onAddPost(title, location, description, costString, durationString, highlights, finalImageUrl, finalDayByDay);
-    alert('Success! Your travel experience trail was published to the feed.');
-    onBackToFeed();
+    setIsSubmitting(true);
+    try {
+      await onAddPost(title, location, description, costString, durationString, highlights, finalImageUrl, finalDayByDay);
+      alert('Success! Your travel experience trail was published to the feed.');
+      onBackToFeed();
+    } catch {
+      // The shared API error banner in App provides the detailed failure state.
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -439,9 +447,10 @@ export const CreatePostScreen = ({ onAddPost, onBackToFeed }) => {
 
             <button
               type="submit"
-              className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg hover:shadow-xl transition active:scale-[0.98] cursor-pointer"
+              disabled={isSubmitting}
+              className="px-8 py-3.5 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-60 text-white font-black text-xs uppercase tracking-wider rounded-xl shadow-lg hover:shadow-xl transition active:scale-[0.98] cursor-pointer"
             >
-              Publish Live Trail Post
+              {isSubmitting ? 'Publishing...' : 'Publish Live Trail Post'}
             </button>
           </div>
 

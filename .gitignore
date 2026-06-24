@@ -1,1 +1,9 @@
-"vazhikal db.zip" 
+vazhikal db.zip
+**/node_modules/
+**/dist/
+**/venv/
+**/.venv/
+**/__pycache__/
+*.py[cod]
+.env
+.env.local

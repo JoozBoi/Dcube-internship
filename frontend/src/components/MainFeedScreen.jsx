@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { 
   ChevronUp, 
   ChevronDown, 
@@ -32,9 +32,11 @@ export const MainFeedScreen = ({
   onPackageSelect,
   onScreenChange,
   savedPostIds,
+  savedPackageIds,
   onToggleSavePost,
   searchTerm,
   currentRole,
+  currentUser,
   onAddPost,
   onRatePackage,
   userPackageRatings = {},
@@ -43,11 +45,17 @@ export const MainFeedScreen = ({
   
   // Dashboard states
   const [dashboardFilter, setDashboardFilter] = useState('all'); // all, saved-posts, saved-packages, agencies-contacted, edit-profile
-  const [profileName, setProfileName] = useState('Sara Wanderer');
-  const [profileEmail, setProfileEmail] = useState('sara@example.com');
-  const [profilePassword, setProfilePassword] = useState('secret123');
-  const [profileBio, setProfileBio] = useState('Lover of mountain passes, remote temple hikes, and authentic experiences.');
+  const [profileName, setProfileName] = useState(currentUser?.username || 'Traveller');
+  const [profileEmail, setProfileEmail] = useState(currentUser?.email || '');
+  const [profilePassword, setProfilePassword] = useState('');
+  const [profileBio, setProfileBio] = useState(currentUser?.bio || '');
   const [isSavedAlert, setIsSavedAlert] = useState('');
+
+  useEffect(() => {
+    setProfileName(currentUser?.username || 'Traveller');
+    setProfileEmail(currentUser?.email || '');
+    setProfileBio(currentUser?.bio || '');
+  }, [currentUser]);
 
   const handleRate = (pkgId, rating) => {
     if (onRatePackage) {
@@ -196,7 +204,7 @@ export const MainFeedScreen = ({
                 <span>Saved Packages</span>
               </span>
               <span className="bg-amber-50 text-amber-600 font-black px-1.5 py-0.5 rounded text-[10px]">
-                2
+                {savedPackageIds?.length || 0}
               </span>
             </button>
 

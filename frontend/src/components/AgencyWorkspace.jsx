@@ -56,10 +56,11 @@ export const AgencyWorkspace = ({
     setIsDialogOpen(true);
   };
 
-  const handleSaveSubmit = (e) => {
+  const handleSaveSubmit = async (e) => {
     e.preventDefault();
     if (!formTitle || !formDestination || !formPrice) return;
 
+    try {
     if (editingPkgId) {
       // Find original and update
       const orig = packages.find(p => p.id === editingPkgId);
@@ -73,7 +74,7 @@ export const AgencyWorkspace = ({
           description: formDescription,
           imageUrl: formImageUrl || 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1000'
         };
-        onEditPackage(updated);
+        await onEditPackage(updated);
       }
     } else {
       // Create new
@@ -108,10 +109,13 @@ export const AgencyWorkspace = ({
         stayValue: 650,
         status: 'Active'
       };
-      onAddPackage(newPkg);
+      await onAddPackage(newPkg);
     }
 
     setIsDialogOpen(false);
+    } catch {
+      // The shared API error banner in App provides the detailed failure state.
+    }
   };
 
   return (

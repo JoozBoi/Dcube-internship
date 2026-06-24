@@ -1,5 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { Eye, EyeOff, AlertTriangle, UploadCloud, CheckCircle, Smartphone, Mail, ShieldAlert, Key, UserPlus, LogIn, Lock, ShieldCheck } from 'lucide-react';
+import { api } from '../lib/api';
 
 export const OnboardingScreen = ({
   users = [],
@@ -96,35 +97,29 @@ export const OnboardingScreen = ({
   };
 
   // Perform Login
-  const handleLoginSubmit = (e) => {
+  const handleLoginSubmit = async (e) => {
     e.preventDefault();
     setLoginError('');
 
     if (activeTab === 'admin') {
       if (adminKey === '99238382') {
-        onAuthenticate('admin');
+        onAuthenticate({ username: 'Administrator', email: adminEmail, role: 'admin' });
       } else {
         setLoginError('Invalid administration credentials secret key.');
       }
       return;
     }
 
-    const trimmedIdent = loginIdentifier.trim().toLowerCase();
-    const user = users.find(u => 
-      u.role === activeTab &&
-      (u.username.toLowerCase() === trimmedIdent || u.email.toLowerCase() === trimmedIdent) &&
-      u.password === loginPassword
-    );
-
-    if (user) {
-      onAuthenticate(activeTab);
-    } else {
-      setLoginError(`Invalid username/email or password for the ${activeTab === 'traveller' ? 'Traveller' : 'Agency'} role.`);
+    try {
+      const user = await api.login({ identifier: loginIdentifier, password: loginPassword, role: activeTab });
+      onAuthenticate(user);
+    } catch (error) {
+      setLoginError(error.message || `Invalid username/email or password for the ${activeTab === 'traveller' ? 'Traveller' : 'Agency'} role.`);
     }
   };
 
   // Traveler Signup Submit
-  const handleTravellerSignUp = (e) => {
+  const handleTravellerSignUp = async (e) => {
     e.preventDefault();
     if (!travellerUsername.trim() || !travellerEmail.trim() || !travellerPassword.trim()) {
       alert('Please fill out all details');
@@ -138,7 +133,13 @@ export const OnboardingScreen = ({
       password: travellerPassword,
       role: 'traveller'
     };
-    onRegisterUser(newUser);
+    try {
+      const createdUser = await onRegisterUser(newUser);
+      onAuthenticate(createdUser);
+    } catch (error) {
+      setLoginError(error.message || 'Could not create your account.');
+      return;
+    }
 
     // Prompt user to log in and switch back to Login view
     setSignupSuccess(`Account created successfully for ${travellerUsername}! Please enter your password to log in.`);
@@ -153,7 +154,7 @@ export const OnboardingScreen = ({
   };
 
   // Agency Signup Submit (verify if approved)
-  const handleAgencySignUp = (e) => {
+  const handleAgencySignUp = async (e) => {
     e.preventDefault();
     setAgencyRegisterError('');
     setAgencyRegisterSuccess('');
@@ -187,7 +188,13 @@ export const OnboardingScreen = ({
       companyName: verifiedItem.companyName
     };
 
-    onRegisterUser(newUser);
+    try {
+      const createdUser = await onRegisterUser(newUser);
+      onAuthenticate(createdUser);
+    } catch (error) {
+      setAgencyRegisterError(error.message || 'Could not create the agency account.');
+      return;
+    }
 
     // Prompt user to log in and switch back to Login view
     setSignupSuccess(`Successfully registered Everest Trekker platform credentials for "${verifiedItem.companyName}"! Please enter your password to log in.`);

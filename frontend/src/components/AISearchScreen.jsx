@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Sparkles, MapPin, DollarSign, Calendar, Eye, Compass, Loader2, ArrowRight, CornerDownRight, CheckCircle2 } from 'lucide-react';
+import { api } from '../lib/api';
 export const AISearchScreen = ({
   onAddCustomAIPost,
   onPostSelect,
@@ -32,19 +33,7 @@ export const AISearchScreen = ({
     setSuccessSaved(false);
 
     try {
-      const response = await fetch('/api/gemini/inspire', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ vibe: vibeInput }),
-      });
-
-      if (!response.ok) {
-        throw new Error('API server failed to generate custom itinerary details.');
-      }
-
-      const val = await response.json();
+      const val = await api.inspireTrip(vibeInput);
       setGeneratedResult(val);
 
     } catch (err) {

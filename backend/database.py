@@ -7,7 +7,10 @@ load_dotenv()
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 
-engine = create_async_engine(DATABASE_URL, echo=True)
+if not DATABASE_URL:
+    raise RuntimeError("DATABASE_URL is required. Copy .env.example to .env and configure PostgreSQL.")
+
+engine = create_async_engine(DATABASE_URL, echo=os.getenv("SQL_ECHO", "false").lower() == "true", pool_pre_ping=True)
 
 AsyncSessionLocal = async_sessionmaker(
     bind=engine,

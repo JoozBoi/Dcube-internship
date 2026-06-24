@@ -16,6 +16,28 @@ import { AdminPortal } from './components/AdminPortal';
 import { AISearchScreen } from './components/AISearchScreen';
 import { CreatePostScreen } from './components/CreatePostScreen';
 import { ShieldAlert, Info, ArrowRight } from 'lucide-react';
+import { api } from './lib/api';
+
+const normalizePost = (post) => ({
+  ...post,
+  imageUrl: post.imageUrl || post.image_url,
+  votes: post.votes || 0,
+  comments: post.comments || [],
+  commentsCount: post.commentsCount || 0,
+  highlights: post.highlights || [],
+  timeAgo: 'Recently',
+  authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
+});
+
+const normalizePackage = (pkg) => ({
+  ...pkg,
+  imageUrl: pkg.imageUrl || pkg.image_url,
+  agencyName: pkg.agencyName || pkg.agency_name,
+  stayRating: pkg.stayRating || pkg.rating || 0,
+  stayReviewsCount: pkg.stayReviewsCount || pkg.reviews_count || 0,
+  isVerifiedAgency: true,
+  status: pkg.status || 'Active',
+});
 
 export default function App() {
   // Navigation & Role states
@@ -23,36 +45,37 @@ export default function App() {
   const [currentScreen, setCurrentScreen] = useState('onboarding');
 
   // Registered accounts for testing dynamic login/signup
-  const [users, setUsers] = useState([
-    { username: 'SaraWanderer', email: 'sara@example.com', password: 'secret123', role: 'traveller' },
-    { username: 'admin', email: 'admin@vazhikal.io', password: '99238382', role: 'admin' },
-    { username: 'EverestTrek', email: 'info@everesttrekkers.np', password: 'agency123', role: 'agency', companyName: 'Everest Trekkers Co.' },
-  ]);
+  const [users, setUsers] = useState([]);
+  const [currentUser, setCurrentUser] = useState(null);
 
   // Unified global registers
-  const [posts, setPosts] = useState([])
+  const [posts, setPosts] = useState([]);
+  const [packages, setPackages] = useState([]);
+  const [apiError, setApiError] = useState('');
 
-useEffect(() => {
-  fetch("http://localhost:8000/posts")
-    .then(res => res.json())
-    .then(data => setPosts(data.map(post => ({
-      ...post,
-      imageUrl: post.image_url,
-      votes: post.votes || 0,
-      comments: [],
-      commentsCount: 0,
-      highlights: [],
-      timeAgo: 'Recently',
-      authorAvatar: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150'
-    }))))
-}, []);
-  const [packages, setPackages] = useState(initialPackages);
+  useEffect(() => {
+    let active = true;
+    Promise.all([api.listUsers(), api.listPosts(), api.listPackages(), api.listVerifications(), api.listFlaggedPosts(), api.listCommentReports()])
+      .then(([loadedUsers, loadedPosts, loadedPackages, loadedVerifications, loadedFlaggedPosts, loadedCommentReports]) => {
+        if (!active) return;
+        setUsers(loadedUsers);
+        setPosts(loadedPosts.map(normalizePost));
+        setPackages(loadedPackages.map(normalizePackage));
+        setVerifications(loadedVerifications);
+        setFlaggedPosts(loadedFlaggedPosts);
+        setCommentReports(loadedCommentReports);
+      })
+      .catch((error) => {
+        if (active) setApiError(`Live data is unavailable: ${error.message}`);
+      });
+    return () => { active = false; };
+  }, []);
   const [userPackageRatings, setUserPackageRatings] = useState({});
   
   // Moderation queues
-  const [verifications, setVerifications] = useState(initialVerifications);
-  const [flaggedPosts, setFlaggedPosts] = useState(initialFlaggedPosts);
-  const [commentReports, setCommentReports] = useState(initialCommentReports);
+  const [verifications, setVerifications] = useState([]);
+  const [flaggedPosts, setFlaggedPosts] = useState([]);
+  const [commentReports, setCommentReports] = useState([]);
 
   // Detail & Selection states
   const [selectedPostId, setSelectedPostId] = useState(null);
@@ -80,40 +103,31 @@ useEffect(() => {
   };
 
   // 2. Voting Logic on experience feed
-  const handleVotePost = (id, direction) => {
-    setPosts(prev => prev.map(p => {
-      if (p.id !== id) return p;
-
-      let scoreDelta = 0;
-      let newVoteState = direction;
-
-      if (p.userVote === direction) {
-        // Toggle off
-        scoreDelta = direction === 'up' ? -1 : 1;
-        newVoteState = undefined;
-      } else {
-        // Toggle on or switch direction
-        if (p.userVote === 'up') scoreDelta = -2;
-        else if (p.userVote === 'down') scoreDelta = 2;
-        else scoreDelta = direction === 'up' ? 1 : -1;
-      }
-
-      return {
-        ...p,
-        votes: p.votes + scoreDelta,
-        userVote: newVoteState
-      };
-    }));
+  const handleVotePost = async (id, direction) => {
+    if (!currentUser) return setApiError('Sign in before voting.');
+    try {
+      const result = await api.votePost(id, { voterEmail: currentUser.email, direction });
+      setPosts(prev => prev.map(post => post.id === id ? { ...post, votes: result.votes, userVote: direction } : post));
+    } catch (error) {
+      setApiError(`Could not save vote: ${error.message}`);
+    }
   };
 
   // 3. Discussion comments management
-  const handleAddComment = (postId, text, replyToCommentId) => {
-    setPosts(prev => prev.map(p => {
+  const handleAddComment = async (postId, text, replyToCommentId) => {
+    try {
+      const created = await api.createComment(postId, {
+        text,
+        parentId: replyToCommentId,
+        author: currentUser?.username || 'Traveller',
+        authorEmail: currentUser?.email,
+      });
+      setPosts(prev => prev.map(p => {
       if (p.id !== postId) return p;
 
       const newC = {
-        id: 'comm_' + Date.now(),
-        author: currentRole === 'admin' ? 'System Administrator' : currentRole === 'agency' ? 'Host Agent' : 'Sojourn Explorer',
+        id: created.id,
+        author: created.author,
         authorAvatar: currentRole === 'admin' 
           ? 'https://images.unsplash.com/photo-1570295999919-56ceb5ecca61?w=150' 
           : 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150',
@@ -154,11 +168,16 @@ useEffect(() => {
         commentsCount: p.commentsCount + 1,
         comments: nextComments
       };
-    }));
+      }));
+    } catch (error) {
+      setApiError(`Could not add comment: ${error.message}`);
+    }
   };
 
-  const handleDeleteComment = (postId, commentId) => {
-    setPosts(prev => prev.map(p => {
+  const handleDeleteComment = async (postId, commentId) => {
+    try {
+      await api.deleteComment(commentId);
+      setPosts(prev => prev.map(p => {
       if (p.id !== postId) return p;
 
       let removedCount = 0;
@@ -200,40 +219,42 @@ useEffect(() => {
         commentsCount: Math.max(0, p.commentsCount - removedCount),
         comments: nextComments
       };
-    }));
+      }));
+    } catch (error) {
+      setApiError(`Could not delete comment: ${error.message}`);
+    }
   };
 
-  const handleDeletePost = (postId) => {
-    setPosts(prev => prev.filter(p => p.id !== postId));
+  const handleDeletePost = async (postId) => {
+    try {
+      await api.deletePost(postId);
+      setPosts(prev => prev.filter(p => p.id !== postId));
+    } catch (error) {
+      setApiError(`Could not delete post: ${error.message}`);
+    }
   };
 
-  const handleReportComment = (postId, commentId, commentText, commentAuthor) => {
+  const handleReportComment = async (postId, commentId, commentText, commentAuthor) => {
     const post = posts.find(p => p.id === postId);
     if (!post) return;
 
-    const newReport = {
-      id: 'cr_dyn_' + Date.now(),
-      username: commentAuthor,
-      postId: postId,
-      postTitle: post.title,
-      text: commentText,
-      reportsCount: 1
-    };
-
-    setCommentReports(prev => {
-      const existing = prev.find(r => r.username === commentAuthor && r.text === commentText);
-      if (existing) {
-        return prev.map(r => r.id === existing.id ? { ...r, reportsCount: r.reportsCount + 1 } : r);
-      }
-      return [newReport, ...prev];
-    });
-
-    alert('This comment has been successfully reported to the admin moderation queue.');
+    try {
+      const newReport = await api.createCommentReport({ commentId, reporterEmail: currentUser?.email, reason: 'Abuse' });
+      setCommentReports(prev => [newReport, ...prev]);
+      alert('This comment has been successfully reported to the admin moderation queue.');
+    } catch (error) {
+      setApiError(`Could not report comment: ${error.message}`);
+    }
   };
 
   // 4. Verification and Submission arrays
-  const handleAddVerification = (item) => {
-    setVerifications(prev => [item, ...prev]);
+  const handleAddVerification = async (item) => {
+    const created = await api.createVerification({
+      agencyEmail: item.email,
+      companyName: item.companyName,
+      documents: item.documents || [],
+    });
+    setVerifications(prev => [created, ...prev]);
   };
 
   const handleApproveVerification = (id, status) => {
@@ -287,21 +308,48 @@ useEffect(() => {
   };
 
   // 6. Packages Inventory Editing in Corporate Workspace
-  const handleAddPackage = (pkg) => {
-    setPackages(prev => [pkg, ...prev]);
+  const handleAddPackage = async (pkg) => {
+    try {
+      const created = await api.createPackage(pkg);
+      setPackages(prev => [normalizePackage(created), ...prev]);
+    } catch (error) {
+      setApiError(`Could not create package: ${error.message}`);
+      throw error;
+    }
   };
 
-  const handleEditPackage = (updatedPkg) => {
-    setPackages(prev => prev.map(p => p.id === updatedPkg.id ? updatedPkg : p));
+  const handleEditPackage = async (updatedPkg) => {
+    try {
+      const updated = await api.updatePackage(updatedPkg.id, updatedPkg);
+      setPackages(prev => prev.map(p => p.id === updatedPkg.id ? normalizePackage(updated) : p));
+    } catch (error) {
+      setApiError(`Could not update package: ${error.message}`);
+      throw error;
+    }
   };
 
-  const handleDeletePackage = (id) => {
-    setPackages(prev => prev.filter(p => p.id !== id));
+  const handleDeletePackage = async (id) => {
+    try {
+      await api.deletePackage(id);
+      setPackages(prev => prev.filter(p => p.id !== id));
+    } catch (error) {
+      setApiError(`Could not delete package: ${error.message}`);
+      throw error;
+    }
   };
 
   // 7. Add Custom AI generated Post to the feed
-  const handleAddCustomAIPost = (post) => {
-    setPosts(prev => [post, ...prev]);
+  const handleAddCustomAIPost = async (post) => {
+    try {
+      const created = await api.createPost({
+        ...post,
+        author: currentUser?.username || post.author,
+        authorEmail: currentUser?.email,
+      });
+      setPosts(prev => [normalizePost(created), ...prev]);
+    } catch (error) {
+      setApiError(`Could not save AI itinerary: ${error.message}`);
+    }
   };
 
   // Bookmark Toggle
@@ -357,22 +405,24 @@ useEffect(() => {
   };
 
   const handleAddPost = async (title, location, description, cost, duration, highlights, imageUrl, dayByDay = []) => {
-    const response = await fetch("http://localhost:8000/posts", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
+    try {
+      const newPost = await api.createPost({
         title,
+        author: currentUser?.username,
+        authorEmail: currentUser?.email,
         location,
         description,
         cost,
         duration,
         imageUrl,
-        highlights,
+        highlights: Array.isArray(highlights) ? highlights : highlights.split(',').map((item) => item.trim()).filter(Boolean),
         dayByDay
-      })
-    });
-    const newPost = await response.json();
-    setPosts(prev => [newPost, ...prev]);
+      });
+      setPosts(prev => [normalizePost(newPost), ...prev]);
+    } catch (error) {
+      setApiError(`Could not create post: ${error.message}`);
+      throw error;
+    }
   };
 
   // Visual View dispatch router
@@ -382,10 +432,16 @@ useEffect(() => {
         return (
           <OnboardingScreen
             users={users}
-            onRegisterUser={(u) => setUsers(prev => [...prev, u])}
+            onRegisterUser={async (user) => {
+              const created = await api.createUser(user);
+              const sessionUser = { ...created, password: user.password };
+              setUsers(prev => [...prev, sessionUser]);
+              return sessionUser;
+            }}
             verifications={verifications}
-            onAuthenticate={(role) => {
-              setCurrentRole(role);
+            onAuthenticate={(user) => {
+              setCurrentUser(user);
+              setCurrentRole(user.role);
               setCurrentScreen('feed');
             }}
             onAddVerificationSubmission={handleAddVerification}
@@ -408,9 +464,11 @@ useEffect(() => {
             }}
             onScreenChange={(screen) => setCurrentScreen(screen)}
             savedPostIds={savedPostIds}
+            savedPackageIds={savedPackageIds}
             onToggleSavePost={handleToggleSavePost}
             searchTerm={searchTerm}
             currentRole={currentRole}
+            currentUser={currentUser}
             onAddPost={handleAddPost}
             onRatePackage={handleRatePackage}
             userPackageRatings={userPackageRatings}
@@ -488,6 +546,13 @@ useEffect(() => {
             setCurrentScreen('feed'); // automatically return to feed with query
           }}
         />
+      )}
+
+      {apiError && (
+        <div className="bg-amber-50 border-b border-amber-200 px-4 py-2 text-center text-sm text-amber-900" role="alert">
+          {apiError}
+          <button className="ml-3 underline" onClick={() => setApiError('')}>Dismiss</button>
+        </div>
       )}
 
       {/* Role specific notification banner helper */}
