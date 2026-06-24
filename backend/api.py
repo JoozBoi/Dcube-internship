@@ -222,20 +222,12 @@ async def create_verification(payload: VerificationCreate, db: AsyncSession = De
     return verification_data(item)
 
 
-@verifications_router.post("/{verification_id}/approve")
-async def approve_verification(verification_id: str, payload: VerificationApproval, db: AsyncSession = Depends(get_db)):
-    item = await db.get(Verification, verification_id)
-    if not item: not_found("Verification")
-    reviewer = await db.scalar(select(User).where(User.email == payload.reviewer_email))
-    if not reviewer or reviewer.role != "admin":
-        raise HTTPException(status_code=403, detail="Only an admin may approve a verification")
-    item.status = "approved" if payload.approved else "rejected"
-    item.reviewed_by = payload.reviewer_email
-    item.review_note = payload.review_note
-    item.reviewed_at = datetime.now(timezone.utc)
-    agency = await db.scalar(select(User).where(User.email == item.agency_email))
-    if agency: agency.is_verified = payload.approved
-    await db.commit(); await db.refresh(item)
+@verifications_router.post("", status_code=status.HTTP_201_CREATED)
+async def create_verification(payload: VerificationCreate, db: AsyncSession = Depends(get_db)):
+    item = Verification(id=str(uuid.uuid4()), **payload.model_dump())
+    db.add(item)
+    await db.commit()
+    await db.refresh(item)
     return verification_data(item)
 
 

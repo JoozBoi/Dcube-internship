@@ -167,10 +167,11 @@ export const OnboardingScreen = ({
     const testId = agencyVerifyId.trim().toLowerCase();
 
     // Check if there is an approved verification
-    const verifiedItem = verifications.find(v => 
-      v.status === 'approved' &&
-      (v.email.toLowerCase() === testId || v.companyName.toLowerCase() === testId)
-    );
+   const verifiedItem = verifications.find(v =>
+  v.status === 'approved' &&
+  (v.agencyEmail?.toLowerCase() === testId ||
+   v.companyName?.toLowerCase() === testId)
+);
 
     if (!verifiedItem) {
       setAgencyRegisterError(
@@ -182,7 +183,7 @@ export const OnboardingScreen = ({
     // Register approved agency
     const newUser = {
       username: agencyUsername,
-      email: verifiedItem.email,
+      email: verifiedItem.agencyEmail,
       password: agencyPassword,
       role: 'agency',
       companyName: verifiedItem.companyName
@@ -198,7 +199,7 @@ export const OnboardingScreen = ({
 
     // Prompt user to log in and switch back to Login view
     setSignupSuccess(`Successfully registered Everest Trekker platform credentials for "${verifiedItem.companyName}"! Please enter your password to log in.`);
-    setLoginIdentifier(verifiedItem.email);
+    setLoginIdentifier(verifiedItem.agencyEmail);
     setLoginPassword('');
     setIsLoggingIn(true);
 

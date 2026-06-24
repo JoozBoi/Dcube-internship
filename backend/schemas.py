@@ -11,7 +11,7 @@ class UserCreate(APIModel):
     uid: str | None = None
     email: EmailStr
     username: str = Field(min_length=1, max_length=100)
-    password: str = Field(min_length=8, max_length=128)
+    password: str = Field(min_length=1, max_length=128)
     role: Literal["traveller", "agency", "admin"] = "traveller"
     bio: str | None = Field(default=None, max_length=2000)
     contact_no: str | None = Field(default=None, alias="contactNo", max_length=40)
