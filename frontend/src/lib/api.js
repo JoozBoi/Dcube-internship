@@ -1,6 +1,9 @@
-// Use FastAPI directly in the browser. This makes every network request visibly
-// target port 8000 while CORS permits the React development origin on port 3000.
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000/api';
+// When accessed from another device on the LAN, `localhost` would point at that
+// device. Derive the API host from the page URL instead (host:3000 -> host:8000).
+const browserApiUrl = typeof window === 'undefined'
+  ? 'http://localhost:8000/api'
+  : `${window.location.protocol}//${window.location.hostname}:8000/api`;
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || browserApiUrl;
 
 async function request(path, options = {}) {
   const response = await fetch(`${API_BASE_URL}${path}`, {
